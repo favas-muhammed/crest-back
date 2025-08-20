@@ -20,6 +20,18 @@ if (!fs.existsSync("uploads")) {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Fallback CORS header for all responses (in case CORS middleware is skipped)
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://crest-front.vercel.app');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 // Middleware
 // Updated CORS configuration
 app.use(
@@ -61,6 +73,10 @@ app.use("/api/applications", require("./src/routes/applicationRoutes")); // Appl
 // MongoDB connection
 const connectDB = require("./src/config/database");
 connectDB();
+
+// Error handling middleware (should be last)
+const errorHandler = require("./src/middlewares/errorHandler");
+app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {
