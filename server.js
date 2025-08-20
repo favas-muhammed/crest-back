@@ -24,17 +24,25 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// CORS configuration
+// Request logging middleware
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://crest-front.vercel.app');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log('Headers:', req.headers);
   next();
+});
+
+// CORS configuration
+app.use(cors({
+  origin: 'https://crest-front.vercel.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200
+}));
+
+// Handle OPTIONS requests
+app.options('*', (req, res) => {
+  res.status(200).end();
 });
 
 // Serve static files from uploads directory
@@ -60,6 +68,21 @@ app.use("/auth", require("./src/routes/authRoutes"));
 app.use("/api", profileRoutes); // Profile routes under /api
 app.use("/api/jobs", require("./src/routes/jobRoutes")); // Job routes
 app.use("/api/applications", require("./src/routes/applicationRoutes")); // Application routes
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  console.error('Stack:', err.stack);
+  
+  if (err.name === 'UnauthorizedError') {
+    return res.status(401).json({ message: 'Invalid token' });
+  }
+  
+  res.status(500).json({ 
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
 
 // MongoDB connection
 const connectDB = require("./src/config/database");

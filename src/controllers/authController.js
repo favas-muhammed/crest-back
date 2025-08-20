@@ -33,18 +33,30 @@ const logout = (req, res, next) => {
 };
 
 const verifyGoogleToken = async (req, res) => {
-  // Handle preflight
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
   try {
+    console.log('Starting Google token verification...');
+    console.log('Request method:', req.method);
+    console.log('Request headers:', req.headers);
+    
+    if (req.method === 'OPTIONS') {
+      res.setHeader('Access-Control-Allow-Origin', 'https://crest-front.vercel.app');
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      return res.status(200).end();
+    }
+
     console.log('Request body:', req.body);
     const { credential } = req.body;
     
     if (!credential) {
       console.log('No credential provided');
       return res.status(400).json({ message: "No credential provided" });
+    }
+
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      console.error('GOOGLE_CLIENT_ID is not set');
+      return res.status(500).json({ message: "Server configuration error" });
     }
 
     console.log('Verifying token with client ID:', process.env.GOOGLE_CLIENT_ID);
@@ -85,7 +97,21 @@ const verifyGoogleToken = async (req, res) => {
     });
   } catch (error) {
     console.error("Token verification error:", error);
-    res.status(401).json({ message: "Failed to authenticate user" });
+    console.error("Error stack:", error.stack);
+    
+    if (!client) {
+      console.error("OAuth2Client not initialized");
+      return res.status(500).json({ message: "Server configuration error" });
+    }
+
+    if (error.message.includes('Invalid token')) {
+      return res.status(401).json({ message: "Invalid token provided" });
+    }
+
+    return res.status(500).json({ 
+      message: "Authentication failed", 
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
   }
 };
 
