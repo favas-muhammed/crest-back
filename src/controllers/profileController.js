@@ -5,7 +5,7 @@ exports.getProfile = async (req, res) => {
     console.log("getProfile - User from request:", req.user);
     const profile = await UserProfile.findOne({ user: req.user._id });
     console.log("getProfile - Found profile:", profile);
-    
+
     if (!profile) {
       console.log("getProfile - No profile found, returning 404");
       // Return a 404 to indicate profile needs to be created
@@ -19,7 +19,9 @@ exports.getProfile = async (req, res) => {
     res.json(profile);
   } catch (error) {
     console.error("Error fetching profile:", error);
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -95,14 +97,15 @@ exports.createOrUpdateProfile = async (req, res) => {
       if (!profile.firstName?.trim()) profile.firstName = firstName;
       if (!profile.lastName?.trim()) profile.lastName = lastName;
       if (!profile.dateOfBirth) profile.dateOfBirth = dateOfBirth;
-      
+
       // Only allow registerAs to be set if profile hasn't been submitted yet
       if (!profile.isProfileSubmitted) {
         profile.registerAs = registerAs;
         profile.isProfileSubmitted = true; // Mark as submitted when registerAs is set
       } else if (registerAs !== profile.registerAs) {
         return res.status(400).json({
-          message: "Registration type cannot be changed after initial submission"
+          message:
+            "Registration type cannot be changed after initial submission",
         });
       }
     } else {
