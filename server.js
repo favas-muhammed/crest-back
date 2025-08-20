@@ -32,18 +32,20 @@ app.use((req, res, next) => {
 });
 
 // CORS configuration
-app.use(cors({
+const corsOptions = {
   origin: 'https://crest-front.vercel.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
   credentials: true,
-  optionsSuccessStatus: 200
-}));
+  optionsSuccessStatus: 204,
+  preflightContinue: false
+};
 
-// Handle OPTIONS requests
-app.options('*', (req, res) => {
-  res.status(200).end();
-});
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Handle preflight requests for all routes
+app.options('*', cors(corsOptions));
 
 // Serve static files from uploads directory
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
