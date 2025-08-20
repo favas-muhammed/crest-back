@@ -29,7 +29,7 @@ app.use(
   })
 );
 // Explicitly handle preflight requests
-app.options("*", cors());
+app.options("/", cors());
 // Serve static files from uploads directory
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(express.json());
