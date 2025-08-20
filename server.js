@@ -20,13 +20,27 @@ if (!fs.existsSync("uploads")) {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS middleware at the very top
+// CORS middleware configuration
 app.use(
   cors({
-    origin: "https://crest-front.vercel.app",
+    origin: ["https://crest-front.vercel.app"],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    optionsSuccessStatus: 200,
+    preflightContinue: false
   })
 );
+
+// Handle preflight requests
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 // Serve static files from uploads directory
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(express.json());

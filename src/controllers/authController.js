@@ -35,9 +35,17 @@ const logout = (req, res, next) => {
 const verifyGoogleToken = async (req, res) => {
   try {
     const { credential } = req.body;
+    
+    if (!credential) {
+      return res.status(400).json({ message: "No credential provided" });
+    }
+
     const ticket = await client.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,
+    }).catch(error => {
+      console.error("Token verification error:", error);
+      throw new Error("Invalid token");
     });
 
     const payload = ticket.getPayload();
