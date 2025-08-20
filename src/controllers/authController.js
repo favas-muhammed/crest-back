@@ -33,19 +33,13 @@ const logout = (req, res, next) => {
 };
 
 const verifyGoogleToken = async (req, res) => {
-  // Set CORS headers specifically for this endpoint
-  res.header("Access-Control-Allow-Origin", "https://crest-front.vercel.app");
-  res.header("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.header("Access-Control-Allow-Credentials", "true");
-
-  // Handle preflight
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
   try {
     const { credential } = req.body;
+    
+    if (!credential) {
+      return res.status(400).json({ message: "No credential provided" });
+    }
+
     const ticket = await client.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,
