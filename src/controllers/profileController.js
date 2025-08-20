@@ -27,6 +27,8 @@ exports.getProfile = async (req, res) => {
 
 exports.createOrUpdateProfile = async (req, res) => {
   try {
+    console.log("Received profile data:", req.body);
+
     const {
       firstName,
       lastName,
@@ -70,43 +72,74 @@ exports.createOrUpdateProfile = async (req, res) => {
         dateOfBirth: profile.dateOfBirth,
       };
 
-      // Check if any immutable fields are being modified after being set
-      const modifiedFields = Object.entries({
-        firstName: firstName?.trim(),
-        lastName: lastName?.trim(),
-        dateOfBirth: dateOfBirth,
-      }).filter(([key, newValue]) => {
-        const existingValue = existingFields[key];
-        return existingValue && existingValue !== newValue;
-      });
-
-      if (modifiedFields.length > 0) {
-        return res.status(400).json({
-          message: `Cannot modify these fields once they are set: ${modifiedFields
-            .map(([key]) => key)
-            .join(", ")}`,
-        });
-      }
-
-      // Update all fields
+      // Always allow updating these fields
       profile.address = address;
       profile.contactNumber = contactNumber;
       profile.country = country;
 
-      // Only set immutable fields if they haven't been set before
-      if (!profile.firstName?.trim()) profile.firstName = firstName;
-      if (!profile.lastName?.trim()) profile.lastName = lastName;
-      if (!profile.dateOfBirth) profile.dateOfBirth = dateOfBirth;
+      // Handle immutable fields only if they haven't been set
+      if (!profile.firstName?.trim()) {
+        profile.firstName = firstName;
+      } else if (firstName !== profile.firstName) {
+        return res
+          .status(400)
+          .json({ message: "First name cannot be modified once set" });
+      }
 
-      // Only allow registerAs to be set if profile hasn't been submitted yet
-      if (!profile.isProfileSubmitted) {
-        profile.registerAs = registerAs;
-        profile.isProfileSubmitted = true; // Mark as submitted when registerAs is set
-      } else if (registerAs !== profile.registerAs) {
+      if (!profile.lastName?.trim()) {
+        profile.lastName = lastName;
+      } else if (lastName !== profile.lastName) {
+        return res
+          .status(400)
+          .json({ message: "Last name cannot be modified once set" });
+      }
+
+      // Handle date of birth with proper format comparison
+      if (!profile.dateOfBirth) {
+        console.log("Setting initial date of birth:", dateOfBirth);
+        profile.dateOfBirth = new Date(dateOfBirth);
+      } else {
+        // Ensure we're working with Date objects
+        const existingDate = new Date(profile.dateOfBirth);
+        const newDate = new Date(dateOfBirth);
+
+        console.log("Comparing dates:", {
+          existingRaw: existingDate,
+          newRaw: newDate,
+          existingISO: existingDate.toISOString(),
+          newISO: newDate.toISOString(),
+        });
+
+        // Compare the dates in YYYY-MM-DD format
+        const existingFormatted = existingDate.toISOString().split("T")[0];
+        const newFormatted = newDate.toISOString().split("T")[0];
+
+        console.log("Formatted dates:", {
+          existingFormatted,
+          newFormatted,
+          areEqual: existingFormatted === newFormatted,
+        });
+
+        if (existingFormatted !== newFormatted) {
+          return res.status(400).json({
+            message: "Date of birth cannot be modified once set",
+            currentDate: existingFormatted,
+            attemptedDate: newFormatted,
+          });
+        }
+      }
+
+      // All immutable field checks are now handled above
+
+      // Handle registerAs field
+      if (profile.registerAs && registerAs !== profile.registerAs) {
         return res.status(400).json({
           message:
             "Registration type cannot be changed after initial submission",
         });
+      } else if (!profile.registerAs) {
+        profile.registerAs = registerAs;
+        profile.isProfileSubmitted = true;
       }
     } else {
       // Create new profile
@@ -127,12 +160,22 @@ exports.createOrUpdateProfile = async (req, res) => {
     await profile.save();
     res.json(profile);
   } catch (error) {
-    console.error("Error saving profile:", error);
+    console.error("Error saving profile:", {
+      error,
+      stack: error.stack,
+      code: error.code,
+    });
+
     if (error.code === 11000) {
       return res.status(400).json({
         message: "Profile already exists for this user",
+        details: error.message,
       });
     }
-    res.status(500).json({ message: "Internal server error" });
+
+    res.status(500).json({
+      message: "Internal server error",
+      details: error.message,
+    });
   }
 };
