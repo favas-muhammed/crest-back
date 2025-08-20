@@ -81,12 +81,10 @@ exports.getApplicationStatus = async (req, res) => {
     });
   } catch (error) {
     console.error("Error getting application status:", error);
-    res
-      .status(500)
-      .json({
-        message: "Error getting application status",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error getting application status",
+      error: error.message,
+    });
   }
 };
 
@@ -117,12 +115,10 @@ exports.getJobApplications = async (req, res) => {
     res.json(job.applications);
   } catch (error) {
     console.error("Error getting job applications:", error);
-    res
-      .status(500)
-      .json({
-        message: "Error getting job applications",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error getting job applications",
+      error: error.message,
+    });
   }
 };
 
@@ -158,12 +154,10 @@ exports.updateApplicationStatus = async (req, res) => {
     res.json({ message: "Application status updated successfully", status });
   } catch (error) {
     console.error("Error updating application status:", error);
-    res
-      .status(500)
-      .json({
-        message: "Error updating application status",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error updating application status",
+      error: error.message,
+    });
   }
 };
 
@@ -189,12 +183,10 @@ exports.getUserApplications = async (req, res) => {
     res.json(applications);
   } catch (error) {
     console.error("Error getting user applications:", error);
-    res
-      .status(500)
-      .json({
-        message: "Error getting user applications",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error getting user applications",
+      error: error.message,
+    });
   }
 };
 
