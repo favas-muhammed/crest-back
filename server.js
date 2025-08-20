@@ -24,15 +24,16 @@ const PORT = process.env.PORT || 5000;
 const corsOptions = {
   origin: "https://crest-front.vercel.app",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "Origin", "X-Requested-With", "Accept"],
   credentials: true,
   optionsSuccessStatus: 200,
+  preflightContinue: false,
 };
 
 // Apply CORS to all routes
 app.use(cors(corsOptions));
 
-// Handle preflight separately
+// Handle preflight requests
 app.options("*", cors(corsOptions));
 
 // Serve static files from uploads directory
