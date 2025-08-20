@@ -21,23 +21,19 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-// Handle CORS preflight
-app.options('*', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://crest-front.vercel.app');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.status(204).end();
-});
+const corsOptions = {
+  origin: 'https://crest-front.vercel.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
 
-// CORS configuration for all other requests
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://crest-front.vercel.app');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  next();
-});
+// Apply CORS to all routes
+app.use(cors(corsOptions));
+
+// Handle preflight separately
+app.options('*', cors(corsOptions));
 
 // Serve static files from uploads directory
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
