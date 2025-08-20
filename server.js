@@ -21,19 +21,21 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-// CORS configuration
+// Handle CORS preflight
+app.options('*', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', 'https://crest-front.vercel.app');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.status(204).end();
+});
+
+// CORS configuration for all other requests
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://crest-front.vercel.app');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  
-  // Handle preflight
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-  
+  res.setHeader('Access-Control-Allow-Origin', 'https://crest-front.vercel.app');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   next();
 });
 
