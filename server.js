@@ -20,26 +20,30 @@ if (!fs.existsSync("uploads")) {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Fallback CORS header for all responses (in case CORS middleware is skipped)
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://crest-front.vercel.app');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(204);
-  }
-  next();
-});
 
-// Middleware
-// Updated CORS configuration
+// CORS middleware at the very top
 app.use(
   cors({
-    origin: "https://crest-front.vercel.app",
+    origin: 'https://crest-front.vercel.app',
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+// Explicitly handle preflight requests
+app.options("*", cors());
+// Serve static files from uploads directory
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(express.json());
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "your-session-secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    },
   })
 );
 
