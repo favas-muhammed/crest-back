@@ -21,31 +21,37 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Body parser middleware
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // Request logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-  console.log('Headers:', req.headers);
+  console.log("Headers:", req.headers);
   next();
 });
 
 // CORS configuration
 const corsOptions = {
-  origin: 'https://crest-front.vercel.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+  origin: "https://crest-front.vercel.app",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Origin",
+    "X-Requested-With",
+    "Content-Type",
+    "Accept",
+    "Authorization",
+  ],
   credentials: true,
   optionsSuccessStatus: 204,
-  preflightContinue: false
+  preflightContinue: false,
 };
 
 // Apply CORS middleware
 app.use(cors(corsOptions));
 
 // Handle preflight requests for all routes
-app.options('*', cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // Serve static files from uploads directory
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -73,16 +79,16 @@ app.use("/api/applications", require("./src/routes/applicationRoutes")); // Appl
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  console.error('Stack:', err.stack);
-  
-  if (err.name === 'UnauthorizedError') {
-    return res.status(401).json({ message: 'Invalid token' });
+  console.error("Error:", err);
+  console.error("Stack:", err.stack);
+
+  if (err.name === "UnauthorizedError") {
+    return res.status(401).json({ message: "Invalid token" });
   }
-  
-  res.status(500).json({ 
-    message: 'Internal server error',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+
+  res.status(500).json({
+    message: "Internal server error",
+    error: process.env.NODE_ENV === "development" ? err.message : undefined,
   });
 });
 
