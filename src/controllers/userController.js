@@ -1,5 +1,6 @@
 // filepath: mern-crud-gmail-auth-app/backend/src/controllers/userController.js
-const User = require("../models/User");
+const User = require("../models/user");
+const { UserProfile } = require("../models");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -45,6 +46,24 @@ exports.loginUser = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Error logging in", error });
+  }
+};
+
+// Delete user account
+exports.deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Delete user profile first (if exists)
+    await UserProfile.findOneAndDelete({ user: userId });
+
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+
+    res.status(200).json({ message: "Account deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    res.status(500).json({ message: "Error deleting account", error });
   }
 };
 

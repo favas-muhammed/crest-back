@@ -3,8 +3,9 @@ const {
   registerUser,
   loginUser,
   getUserData,
+  deleteAccount,
 } = require("../controllers/userController");
-const authMiddleware = require("../middlewares/auth");
+const { authenticate } = require("../middlewares/auth");
 
 const router = express.Router();
 
@@ -15,6 +16,9 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 
 // Route for fetching user data (protected)
-router.get("/me", authMiddleware, getUserData);
+router.get("/me", authenticate, getUserData);
+
+// Route for deleting user account (protected)
+router.delete("/delete-account", authenticate, deleteAccount);
 
 module.exports = router;

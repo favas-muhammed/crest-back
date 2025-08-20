@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const passport = require("passport");
 const session = require("express-session");
 const userRoutes = require("./src/routes/userRoutes");
+const profileRoutes = require("./src/routes/profileRoutes");
 require("./src/config/passport");
 
 dotenv.config();
@@ -13,10 +14,13 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
+// CORS configuration
 app.use(
   cors({
     origin: process.env.FRONTEND_URL,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 app.use(express.json());
@@ -37,6 +41,7 @@ app.use(passport.session());
 // Routes
 app.use("/api/users", userRoutes);
 app.use("/auth", require("./src/routes/authRoutes"));
+app.use("/api", profileRoutes); // Profile routes under /api
 
 // MongoDB connection
 mongoose

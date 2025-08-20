@@ -53,6 +53,10 @@ const verifyGoogleToken = async (req, res) => {
       }).save();
     }
 
+    // Check if user has completed their profile
+    const { UserProfile } = require("../models");
+    const profile = await UserProfile.findOne({ user: user._id });
+
     // Generate JWT token
     const token = generateToken(user);
 
@@ -62,6 +66,7 @@ const verifyGoogleToken = async (req, res) => {
         id: user._id,
         email: user.email,
         name: user.name,
+        profileComplete: !!profile,
       },
     });
   } catch (error) {
