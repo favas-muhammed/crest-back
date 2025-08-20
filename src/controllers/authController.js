@@ -33,19 +33,28 @@ const logout = (req, res, next) => {
 };
 
 const verifyGoogleToken = async (req, res) => {
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   try {
+    console.log('Request body:', req.body);
     const { credential } = req.body;
     
     if (!credential) {
+      console.log('No credential provided');
       return res.status(400).json({ message: "No credential provided" });
     }
 
+    console.log('Verifying token with client ID:', process.env.GOOGLE_CLIENT_ID);
     const ticket = await client.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
+    console.log('Token verified successfully');
 
     // Find or create user
     let user = await User.findOne({ email: payload.email });
