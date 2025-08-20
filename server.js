@@ -56,14 +56,8 @@ app.use("/api/jobs", require("./src/routes/jobRoutes")); // Job routes
 app.use("/api/applications", require("./src/routes/applicationRoutes")); // Application routes
 
 // MongoDB connection
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log("MongoDB connected");
-  })
-  .catch((err) => {
-    console.error("MongoDB connection error:", err);
-  });
+const connectDB = require("./src/config/database");
+connectDB();
 
 // Start server
 app.listen(PORT, () => {
