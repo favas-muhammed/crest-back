@@ -42,6 +42,7 @@ app.use(passport.session());
 app.use("/api/users", userRoutes);
 app.use("/auth", require("./src/routes/authRoutes"));
 app.use("/api", profileRoutes); // Profile routes under /api
+app.use("/api/jobs", require("./src/routes/jobRoutes")); // Job routes
 
 // MongoDB connection
 mongoose
