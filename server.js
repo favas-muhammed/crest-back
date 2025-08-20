@@ -4,11 +4,18 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const passport = require("passport");
 const session = require("express-session");
+const path = require("path");
 const userRoutes = require("./src/routes/userRoutes");
 const profileRoutes = require("./src/routes/profileRoutes");
 require("./src/config/passport");
 
 dotenv.config();
+
+// Create uploads directory if it doesn't exist
+const fs = require("fs");
+if (!fs.existsSync("uploads")) {
+  fs.mkdirSync("uploads");
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,6 +30,9 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// Serve static files from uploads directory
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(express.json());
 app.use(
   session({
@@ -43,6 +53,7 @@ app.use("/api/users", userRoutes);
 app.use("/auth", require("./src/routes/authRoutes"));
 app.use("/api", profileRoutes); // Profile routes under /api
 app.use("/api/jobs", require("./src/routes/jobRoutes")); // Job routes
+app.use("/api/applications", require("./src/routes/applicationRoutes")); // Application routes
 
 // MongoDB connection
 mongoose
