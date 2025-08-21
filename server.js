@@ -24,9 +24,12 @@ const PORT = process.env.PORT || 5000;
 const allowedOrigins = process.env.ALLOWED_ORIGINS.split(",");
 const corsOptions = {
   origin: function (origin, callback) {
+    console.log("Request origin:", origin);
+    console.log("Allowed origins:", allowedOrigins);
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
+      console.log("CORS blocked origin:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
@@ -39,6 +42,7 @@ const corsOptions = {
     "Origin",
     "X-Requested-With",
   ],
+  exposedHeaders: ["Set-Cookie"],
   maxAge: 600,
 };
 
@@ -49,7 +53,7 @@ app.use((req, res, next) => {
   res.header("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
   res.header("Cross-Origin-Resource-Policy", "cross-origin");
   res.header("Access-Control-Allow-Credentials", "true");
-  
+
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.header("Access-Control-Allow-Origin", origin);
@@ -57,8 +61,14 @@ app.use((req, res, next) => {
 
   // Handle preflight requests
   if (req.method === "OPTIONS") {
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept, Origin, X-Requested-With");
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS"
+    );
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, Accept, Origin, X-Requested-With"
+    );
     return res.status(200).end();
   }
   next();

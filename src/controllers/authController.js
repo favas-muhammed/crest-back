@@ -43,11 +43,21 @@ const verifyGoogleToken = async (req, res) => {
     }
 
     console.log("Verifying token with Google...");
-    const ticket = await client
-      .verifyIdToken({
-        idToken: credential,
-        audience: process.env.GOOGLE_CLIENT_ID,
-      })
+    console.log("Using Google Client ID:", process.env.GOOGLE_CLIENT_ID);
+    try {
+      const ticket = await client
+        .verifyIdToken({
+          idToken: credential,
+          audience: process.env.GOOGLE_CLIENT_ID,
+        });
+      console.log("Token verification successful");
+    } catch (error) {
+      console.error("Token verification failed:", error);
+      return res.status(401).json({ 
+        message: "Token verification failed",
+        error: error.message 
+      });
+    }
       .catch((error) => {
         console.error("Token verification error:", error);
         throw new Error("Invalid token");
