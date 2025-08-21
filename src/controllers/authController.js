@@ -2,7 +2,6 @@ const passport = require("passport");
 const generateToken = require("../../utils/generateToken");
 const { OAuth2Client } = require("google-auth-library");
 const User = require("../models/user");
-const UserProfile = require("../models/userProfile");
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -25,12 +24,21 @@ const googleCallback = (req, res, next) => {
 };
 
 const logout = (req, res, next) => {
-  req.logout((err) => {
-    if (err) {
-      return next(err);
-    }
+  if (req.session) {
+    req.session.destroy((err) => {
+      if (err) {
+        return next(err);
+      }
+      req.logout((err) => {
+        if (err) {
+          return next(err);
+        }
+        res.redirect(process.env.FRONTEND_URL);
+      });
+    });
+  } else {
     res.redirect(process.env.FRONTEND_URL);
-  });
+  }
 };
 
 const verifyGoogleToken = async (req, res) => {
@@ -45,7 +53,7 @@ const verifyGoogleToken = async (req, res) => {
 
     console.log("Verifying token with Google...");
     console.log("Using Google Client ID:", process.env.GOOGLE_CLIENT_ID);
-    
+
     let ticket;
     try {
       ticket = await client.verifyIdToken({
@@ -55,9 +63,9 @@ const verifyGoogleToken = async (req, res) => {
       console.log("Token verification successful");
     } catch (error) {
       console.error("Token verification failed:", error);
-      return res.status(401).json({ 
+      return res.status(401).json({
         message: "Token verification failed",
-        error: error.message 
+        error: error.message,
       });
     }
 
@@ -74,29 +82,28 @@ const verifyGoogleToken = async (req, res) => {
       }).save();
     }
 
+    // Check if user has completed their profile
+    let profile = null;
     try {
-      // Check if user has completed their profile
-      const profile = await UserProfile.findOne({ user: user._id });
-
-      // Generate JWT token
-      const token = generateToken(user);
-
-      res.json({
-        token,
-        user: {
-          id: user._id,
-          email: user.email,
-          name: user.name,
-          profileComplete: !!profile,
-        },
-      });
+      const { UserProfile } = require("../models");
+      profile = await UserProfile.findOne({ user: user._id });
     } catch (error) {
-      console.error("Error checking profile:", error);
-      return res.status(500).json({ 
-        message: "Error checking user profile",
-        error: error.message 
-      });
+      console.error("Error fetching user profile:", error);
+      // Continue execution even if profile fetch fails
     }
+
+    // Generate JWT token
+    const token = generateToken(user);
+
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        profileComplete: !!profile,
+      },
+    });
   } catch (error) {
     console.error("Token verification error:", error);
     res.status(401).json({ message: "Failed to authenticate user" });
