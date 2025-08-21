@@ -34,22 +34,24 @@ const logout = (req, res, next) => {
 
 const verifyGoogleToken = async (req, res) => {
   try {
-    console.log('Verify endpoint hit with body:', req.body);
+    console.log("Verify endpoint hit with body:", req.body);
     const { credential } = req.body;
-    
+
     if (!credential) {
-      console.log('No credential provided');
+      console.log("No credential provided");
       return res.status(400).json({ message: "No credential provided" });
     }
 
-    console.log('Verifying token with Google...');
-    const ticket = await client.verifyIdToken({
-      idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    }).catch(error => {
-      console.error("Token verification error:", error);
-      throw new Error("Invalid token");
-    });
+    console.log("Verifying token with Google...");
+    const ticket = await client
+      .verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      })
+      .catch((error) => {
+        console.error("Token verification error:", error);
+        throw new Error("Invalid token");
+      });
 
     const payload = ticket.getPayload();
 
