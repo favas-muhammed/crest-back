@@ -44,7 +44,6 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
   })
 );
-});
 
 // Serve static files from uploads directory
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
