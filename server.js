@@ -21,19 +21,37 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // CORS and Security Configuration
-app.use(cors());  // Enable CORS for all routes
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(",");
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "Accept",
+    "Origin",
+    "X-Requested-With",
+  ],
+  maxAge: 600,
+};
 
+app.use(cors(corsOptions));
+
+// Additional security headers
 app.use((req, res, next) => {
-  // Allow requests from your frontend domain
-  res.header('Access-Control-Allow-Origin', 'https://crest-front.vercel.app');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Cross-Origin-Opener-Policy', 'unsafe-none');
-  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.header("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  res.header("Cross-Origin-Resource-Policy", "cross-origin");
+  res.header("Access-Control-Allow-Credentials", "true");
 
   // Handle preflight requests
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
   next();
@@ -53,7 +71,6 @@ app.use(
     },
   })
 );
-
 
 // Serve static files from uploads directory
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
