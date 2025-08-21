@@ -20,25 +20,30 @@ if (!fs.existsSync("uploads")) {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS middleware configuration
+// Security and CORS middleware configuration
+app.use((req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', 'https://crest-front.vercel.app');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept');
+  
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
+// CORS middleware
 app.use(
   cors({
-    origin: ["https://crest-front.vercel.app"],
+    origin: 'https://crest-front.vercel.app',
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
-    optionsSuccessStatus: 200,
-    preflightContinue: false
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
   })
 );
-
-// Handle preflight requests
-app.use((req, res, next) => {
-  if (req.method === "OPTIONS") {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
 });
 
 // Serve static files from uploads directory
