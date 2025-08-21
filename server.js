@@ -7,6 +7,7 @@ const session = require("express-session");
 const path = require("path");
 const userRoutes = require("./src/routes/userRoutes");
 const profileRoutes = require("./src/routes/profileRoutes");
+const notificationRoutes = require("./src/routes/notificationRoutes");
 require("./src/config/passport");
 
 dotenv.config();
@@ -110,8 +111,9 @@ app.use(passport.session());
 app.use("/api/users", userRoutes);
 app.use("/auth", require("./src/routes/authRoutes"));
 app.use("/api", profileRoutes); // Profile routes under /api
-app.use("/api/jobs", require("./src/routes/jobRoutes")); // Job routes
+app.use("/api/jobs", require("./src/routes/jobRoutes")); // Job routes with apply functionality
 app.use("/api/applications", require("./src/routes/applicationRoutes")); // Application routes
+app.use("/api/notifications", notificationRoutes); // Notification routes
 
 // MongoDB connection
 const connectDB = require("./src/config/database");
