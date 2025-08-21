@@ -49,9 +49,16 @@ app.use((req, res, next) => {
   res.header("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
   res.header("Cross-Origin-Resource-Policy", "cross-origin");
   res.header("Access-Control-Allow-Credentials", "true");
+  
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
 
   // Handle preflight requests
   if (req.method === "OPTIONS") {
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept, Origin, X-Requested-With");
     return res.status(200).end();
   }
   next();
