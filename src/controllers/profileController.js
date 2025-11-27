@@ -19,11 +19,16 @@ const createOrUpdateProfile = async (req, res) => {
     if (profile) {
       // Update profile
       Object.assign(profile, req.body);
+      profile.isProfileSubmitted = true;
       await profile.save();
       res.status(200).json({ message: "Profile updated", profile });
     } else {
       // Create new profile
-      profile = await UserProfile.create({ ...req.body, user: req.user._id });
+      profile = await UserProfile.create({
+        ...req.body,
+        user: req.user._id,
+        isProfileSubmitted: true,
+      });
       res.status(201).json({ message: "Profile created", profile });
     }
   } catch (error) {
