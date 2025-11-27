@@ -1,5 +1,6 @@
 const Job = require("../models/job");
 const { UserProfile } = require("../models");
+const Notification = require("../models/notification");
 const fs = require("fs").promises;
 
 exports.applyForJob = async (req, res) => {
@@ -47,6 +48,15 @@ exports.applyForJob = async (req, res) => {
     });
 
     await job.save();
+
+    // Create notification for job owner
+    const notification = new Notification({
+      userId: job.postedBy,
+      jobId: jobId,
+      message: `A new application has been submitted for your job posting: ${job.title}`,
+      type: "application",
+    });
+    await notification.save();
 
     res.status(201).json({
       message: "Application submitted successfully",
